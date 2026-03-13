@@ -23,23 +23,30 @@ Four components, built in this order:
 3. **Consensus engine** — weighted aggregation with outlier detection and reputation
 4. **MCP server** — thin wrapper over REST API using Anthropic's SDK
 
-## Stack
+## Stack (Cloudflare-native)
 
-| Layer | Technology |
-|-------|-----------|
-| API | FastAPI (Python) |
-| Database | PostgreSQL |
-| Queue | Redis |
-| Agent auth | API keys hashed with bcrypt |
-| Frontend | Vanilla HTML/CSS/JS on Cloudflare Pages |
-| Backend functions | Cloudflare Workers (`functions/` dir) |
-| Anonymous identity | UUID token in localStorage |
-| Hosting | Cloudflare Pages (frontend), backend TBD (Railway / Fly.io / Render) |
+All infrastructure runs on Cloudflare to minimize cost and ops overhead. No external databases or servers.
+
+| Layer | Cloudflare Service | Notes |
+|-------|-------------------|-------|
+| API + business logic | Workers | JS — REST endpoints in `functions/` |
+| Database | D1 (SQLite) | Low write volume (agents rate-limited), read-heavy — well within D1 limits |
+| Job queue | Queues | Replaces Redis — at-least-once delivery, managed |
+| API key storage & rate limiting | KV | Fast key-value lookups at edge |
+| Agent auth | Workers + KV | PBKDF2 via Web Crypto API (bcrypt unavailable in Workers) |
+| Content moderation | Workers AI | Built-in classifier for harmful/manipulative content |
+| Frontend | Pages | Vanilla HTML/CSS/JS, push-to-deploy from GitHub |
+| Anonymous identity | UUID token in localStorage | No server-side session state |
+
+### Why not PostgreSQL + Redis + FastAPI?
+
+D1's single-writer model is fine for v1: agents are rate-limited to 10 req/hour, each pulse gets 3–7 human responses. That's dozens of writes per minute at peak — D1 handles ~1,000/sec. If write volume ever outgrows D1, migrate to Hyperdrive + external PostgreSQL without changing the Worker code significantly.
 
 ## Hosting & deployment
 
-- Frontend deploys to **Cloudflare Pages** from GitHub — push to deploy, no build step
-- Serverless backend logic uses **Cloudflare Workers** in `functions/` with `wrangler.toml`
+- Everything deploys to **Cloudflare** from GitHub — push to deploy, no build step
+- Backend logic in `functions/` directory with `wrangler.toml` config
+- D1 database, KV namespaces, and Queues configured in `wrangler.toml`
 - GitHub org: `github.com/Jrcruciani/`
 - Git commits under user: "J.R. Cruciani"
 
@@ -55,7 +62,7 @@ Four core tables:
 ## API conventions
 
 - All agent endpoints under `/api/v1/pulse`
-- Auth via `Authorization: Bearer {api_key}` header
+- Auth via `Authorization: Bearer {api_key}` header — keys hashed with PBKDF2 (Web Crypto API) and stored in KV
 - POST to create a pulse, GET `/{job_id}` to poll results
 - No webhooks in v1 — agents poll with exponential backoff
 - No SLA on response time — agents explicitly accept waiting
@@ -88,12 +95,12 @@ These are critical business logic — do not simplify or change without discussi
 
 ## Security constraints
 
-- Agent API keys are bcrypt-hashed in the database
+- Agent API keys are PBKDF2-hashed (Web Crypto API) and stored in KV
 - Rate limiting per API key (agents) and per IP (public web)
 - Payload content is never shown fully to humans if it exceeds a size limit — show a system-generated summary instead
 - Agents cannot see individual respondent data (only aggregates)
 - Respondents cannot see which agent asked (only category)
-- Content moderation: automatic classifier + manual review on flag for harmful/manipulative questions
+- Content moderation: Workers AI classifier + manual review on flag for harmful/manipulative questions
 
 ## Frontend style conventions
 
