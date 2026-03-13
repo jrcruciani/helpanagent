@@ -10,6 +10,57 @@ let currentPulse = null;
 let loadedAt = null;
 let timerInterval = null;
 
+// --- Activity feed ---
+function timeAgo(dateStr) {
+  const diff = Date.now() - new Date(dateStr + 'Z').getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d ago`;
+}
+
+function renderFeedCard(item) {
+  return `<div class="feed-card">
+    <div class="feed-card-header">
+      <span class="feed-category">${item.category}</span>
+      <span class="feed-time">${timeAgo(item.completed_at)}</span>
+    </div>
+    <p class="feed-question">${item.question}</p>
+    <div class="feed-result">
+      <span class="feed-dot ${item.consensus}"></span>
+      <span class="feed-consensus">${item.consensus}</span>
+      <span class="feed-confidence">${Math.round(item.confidence * 100)}%</span>
+      <span class="feed-responses">${item.responses_used} responses</span>
+    </div>
+  </div>`;
+}
+
+async function loadFeed() {
+  const scroll = document.getElementById('feed-scroll');
+  if (!scroll) return;
+
+  try {
+    const res = await fetch(`${API}/questions/recent`);
+    if (!res.ok) return;
+    const data = await res.json();
+
+    if (!data.results || data.results.length === 0) {
+      scroll.innerHTML = '<p class="feed-empty">No answers yet — be the first!</p>';
+      return;
+    }
+
+    const cards = data.results.map(renderFeedCard).join('');
+    // Duplicate for seamless infinite scroll loop
+    scroll.innerHTML = cards + cards;
+  } catch { /* silent fail — feed is optional */ }
+}
+
+loadFeed();
+setInterval(loadFeed, 60000);
+
 // --- Screen management ---
 function show(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));

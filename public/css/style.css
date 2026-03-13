@@ -28,12 +28,21 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow-x: hidden;
 }
 
 #app {
   width: 100%;
-  max-width: 520px;
+  max-width: 960px;
   padding: 24px 16px;
+}
+
+/* Keep non-landing screens narrow and centered */
+#question-screen,
+#result-screen,
+#empty-screen {
+  max-width: 520px;
+  margin: 0 auto;
 }
 
 /* Screens */
@@ -293,4 +302,205 @@ h1 {
   text-align: center;
   margin-top: 20px;
   margin-bottom: 4px;
+}
+
+/* ─── Activity Feed ─── */
+
+.landing-layout {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.landing-main {
+  flex: 1 1 480px;
+  min-width: 0;
+}
+
+.feed-column {
+  flex: 0 0 320px;
+  height: 480px;
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius);
+}
+
+.feed-column::before,
+.feed-column::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  height: 48px;
+  z-index: 2;
+  pointer-events: none;
+}
+.feed-column::before {
+  top: 0;
+  background: linear-gradient(to bottom, var(--bg), transparent);
+}
+.feed-column::after {
+  bottom: 0;
+  background: linear-gradient(to top, var(--bg), transparent);
+}
+
+.feed-scroll {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: scrollUp 40s linear infinite;
+}
+
+.feed-scroll:hover {
+  animation-play-state: paused;
+}
+
+@keyframes scrollUp {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-50%); }
+}
+
+.feed-card {
+  background: var(--card-bg);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  box-shadow: var(--shadow);
+  cursor: default;
+  transition: box-shadow 0.15s;
+  flex-shrink: 0;
+}
+.feed-card:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+.feed-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.feed-category {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--primary-light);
+  color: var(--primary);
+}
+.feed-time {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.feed-question {
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text);
+  margin-bottom: 10px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.feed-result {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.feed-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.feed-dot.yes { background: var(--yes); }
+.feed-dot.no { background: var(--no); }
+.feed-dot.depends { background: var(--depends); }
+
+.feed-consensus {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.feed-confidence {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.feed-responses {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+.feed-empty {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 14px;
+  padding: 40px 16px;
+}
+
+.feed-title {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+/* ─── Mobile: horizontal feed below CTA ─── */
+@media (max-width: 767px) {
+  .landing-layout {
+    flex-direction: column;
+    gap: 32px;
+    max-width: 520px;
+  }
+
+  .landing-main {
+    flex: none;
+    width: 100%;
+  }
+
+  .feed-column {
+    flex: none;
+    width: 100%;
+    height: 160px;
+    overflow: hidden;
+  }
+
+  .feed-scroll {
+    flex-direction: row;
+    gap: 12px;
+    animation: scrollLeft 30s linear infinite;
+  }
+
+  .feed-card {
+    min-width: 260px;
+    max-width: 260px;
+  }
+
+  .feed-column::before,
+  .feed-column::after {
+    top: 0; bottom: 0;
+    width: 32px;
+    height: auto;
+  }
+  .feed-column::before {
+    left: 0; right: auto;
+    background: linear-gradient(to right, var(--bg), transparent);
+  }
+  .feed-column::after {
+    right: 0; left: auto;
+    background: linear-gradient(to left, var(--bg), transparent);
+  }
+
+  @keyframes scrollLeft {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
 }
