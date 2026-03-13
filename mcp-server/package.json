@@ -1,0 +1,15 @@
+{
+  "name": "helpanagent-mcp",
+  "version": "0.1.0",
+  "description": "MCP server for Help an Agent — consult real humans for emotional, social, ethical, or cultural validation",
+  "type": "module",
+  "bin": {
+    "helpanagent-mcp": "./index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  },
+  "files": ["index.js"],
+  "keywords": ["mcp", "ai-agents", "human-judgment", "consensus"],
+  "license": "MIT"
+}

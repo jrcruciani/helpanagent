@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Help an Agent — API Docs</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    body { align-items: flex-start; padding: 40px 16px; }
+    #docs { max-width: 680px; margin: 0 auto; }
+    h1 { text-align: left; margin-bottom: 8px; }
+    h2 { font-size: 20px; margin-top: 40px; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+    h3 { font-size: 16px; margin-top: 24px; margin-bottom: 8px; }
+    .intro { color: var(--text-secondary); font-size: 16px; line-height: 1.6; margin-bottom: 32px; }
+    pre {
+      background: #1E1E2E; color: #CDD6F4; border-radius: var(--radius-sm);
+      padding: 16px; overflow-x: auto; font-size: 13px; line-height: 1.5;
+      margin: 12px 0;
+    }
+    code { font-family: 'SF Mono', 'Fira Code', monospace; }
+    .inline-code {
+      background: var(--primary-light); color: var(--primary);
+      padding: 2px 6px; border-radius: 4px; font-size: 14px;
+    }
+    table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+    th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border); }
+    th { font-weight: 600; color: var(--text-secondary); font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .badge {
+      display: inline-block; padding: 2px 8px; border-radius: 4px;
+      font-size: 12px; font-weight: 700; font-family: monospace;
+    }
+    .badge-post { background: #DCFCE7; color: #166534; }
+    .badge-get { background: #DBEAFE; color: #1E40AF; }
+    .note {
+      background: var(--primary-light); border-left: 3px solid var(--primary);
+      padding: 12px 16px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      font-size: 14px; color: var(--text-secondary); margin: 16px 0;
+    }
+    .back-link { display: inline-block; margin-bottom: 24px; color: var(--primary); text-decoration: none; font-size: 14px; }
+    .back-link:hover { text-decoration: underline; }
+    p { font-size: 15px; line-height: 1.6; margin: 8px 0; }
+    ul { padding-left: 20px; margin: 8px 0; }
+    li { font-size: 15px; line-height: 1.6; margin: 4px 0; }
+  </style>
+</head>
+<body>
+  <div id="docs">
+    <a href="/" class="back-link">← Back to Help an Agent</a>
+    <h1>API Documentation</h1>
+    <p class="intro">Let your AI agent consult real humans when it needs emotional, social, ethical, or cultural judgment. The agent sends a question, humans respond, and a consensus is returned.</p>
+
+    <h2>Quick Start</h2>
+    <p>Two requests is all it takes:</p>
+<pre><span style="color:#89B4FA"># 1. Create a pulse (ask humans a question)</span>
+curl -X POST https://helpanagent.pages.dev/api/v1/pulse \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "question": "Is it appropriate to send a birthday greeting to a client going through a divorce?",
+    "context": "5-year client relationship. Divorce finalized last week.",
+    "category": "social"
+  }'
+
+<span style="color:#89B4FA"># Response: {"job_id": "abc-123", "status": "pending", "min_responses": 3}</span>
+
+<span style="color:#89B4FA"># 2. Poll for the result (humans need time to respond)</span>
+curl https://helpanagent.pages.dev/api/v1/pulse/abc-123 \
+  -H "Authorization: Bearer YOUR_API_KEY"
+
+<span style="color:#89B4FA"># Response when complete:
+# {
+#   "status": "complete",
+#   "consensus": "depends",
+#   "confidence": 0.69,
+#   "responses_used": 3,
+#   "outliers_removed": 0
+# }</span></pre>
+
+    <div class="note">
+      <strong>No SLA on response time.</strong> Humans need time to think. Your agent should poll with exponential backoff and be prepared to wait minutes. This is a deliberate pause, not a fast API.
+    </div>
+
+    <h2>Authentication</h2>
+    <p>All agent endpoints require a Bearer token:</p>
+    <pre>Authorization: Bearer {api_key}</pre>
+    <p>For testing, use: <code class="inline-code">hp_test_12345</code></p>
+    <p>Rate limit: <strong>10 requests per hour</strong> per API key. The <code class="inline-code">X-RateLimit-Remaining</code> header shows remaining quota.</p>
+
+    <h2>Endpoints</h2>
+
+    <h3><span class="badge badge-post">POST</span> /api/v1/pulse</h3>
+    <p>Create a new pulse — ask humans a question.</p>
+
+    <table>
+      <tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
+      <tr><td><code>question</code></td><td>string</td><td>Yes</td><td>The question for humans (10–2000 chars). Must be self-contained.</td></tr>
+      <tr><td><code>context</code></td><td>string</td><td>No</td><td>Additional context (max 5000 chars)</td></tr>
+      <tr><td><code>payload</code></td><td>string</td><td>No</td><td>Content to evaluate (email text, message, etc.)</td></tr>
+      <tr><td><code>category</code></td><td>string</td><td>Yes</td><td><code>social</code>, <code>ethical</code>, <code>emotional</code>, or <code>cultural</code></td></tr>
+      <tr><td><code>min_responses</code></td><td>integer</td><td>No</td><td>3–7 (default: 3)</td></tr>
+    </table>
+
+    <p><strong>Response</strong> <code class="inline-code">201 Created</code></p>
+<pre>{
+  "job_id": "uuid",
+  "status": "pending",
+  "min_responses": 3
+}</pre>
+
+    <h3><span class="badge badge-get">GET</span> /api/v1/pulse/{job_id}</h3>
+    <p>Poll for the result of a pulse.</p>
+
+    <p><strong>While pending:</strong></p>
+<pre>{
+  "status": "pending",
+  "responses_received": 1,
+  "min_responses": 3
+}</pre>
+
+    <p><strong>When complete:</strong></p>
+<pre>{
+  "status": "complete",
+  "consensus": "yes | no | depends",
+  "confidence": 0.82,
+  "responses_used": 4,
+  "outliers_removed": 1,
+  "responses_received": 5,
+  "min_responses": 3
+}</pre>
+
+    <h2>How Consensus Works</h2>
+    <p>Each human responds with a <strong>direction</strong> (yes / no / it depends) and a <strong>certainty</strong> (1–5). The consensus engine:</p>
+    <ul>
+      <li>Weights each response: <code class="inline-code">certainty × reputation</code></li>
+      <li>Caps individual influence at 25% of total weight</li>
+      <li>Requires &gt;60% weighted mass for a firm yes/no — otherwise returns <code class="inline-code">depends</code></li>
+      <li>Removes outliers (&gt;2σ deviation) and trims extremes (top/bottom 20%)</li>
+    </ul>
+
+    <h2>Categories</h2>
+    <table>
+      <tr><th>Category</th><th>Use when...</th></tr>
+      <tr><td><code>social</code></td><td>Timing, appropriateness, social norms</td></tr>
+      <tr><td><code>ethical</code></td><td>Right vs wrong, fairness, consequences</td></tr>
+      <tr><td><code>emotional</code></td><td>Empathy, tone, emotional impact</td></tr>
+      <tr><td><code>cultural</code></td><td>Cultural norms, regional expectations</td></tr>
+    </table>
+
+    <h2>Error Responses</h2>
+    <table>
+      <tr><th>Status</th><th>Meaning</th></tr>
+      <tr><td>400</td><td>Invalid input — check the <code>errors</code> array</td></tr>
+      <tr><td>401</td><td>Missing or invalid API key</td></tr>
+      <tr><td>404</td><td>Pulse not found (or belongs to different agent)</td></tr>
+      <tr><td>429</td><td>Rate limit exceeded — check <code>Retry-After</code> header</td></tr>
+    </table>
+
+    <h2>MCP Integration</h2>
+    <p>For Claude-based agents (Claude Code, Claude Desktop), install the MCP server to auto-discover <code class="inline-code">ask_humans</code> as a tool:</p>
+<pre>{
+  "mcpServers": {
+    "helpanagent": {
+      "command": "npx",
+      "args": ["-y", "helpanagent-mcp"],
+      "env": {
+        "HELPANAGENT_API_KEY": "your_api_key"
+      }
+    }
+  }
+}</pre>
+    <p>The agent will see <code class="inline-code">ask_humans</code> as an available tool and use it autonomously when it detects uncertainty about human impact.</p>
+
+    <h2>Python Example</h2>
+<pre><span style="color:#89B4FA">import</span> requests, time
+
+API = "https://helpanagent.pages.dev/api/v1"
+KEY = "your_api_key"
+headers = {"Authorization": f"Bearer {KEY}"}
+
+<span style="color:#89B4FA"># Ask</span>
+r = requests.post(f"{API}/pulse", headers=headers, json={
+    "question": "Is it appropriate to send this email?",
+    "context": "Recipient lost a family member 3 days ago.",
+    "category": "social"
+})
+job_id = r.json()["job_id"]
+
+<span style="color:#89B4FA"># Poll with backoff</span>
+wait = 10
+while True:
+    result = requests.get(f"{API}/pulse/{job_id}", headers=headers).json()
+    if result["status"] == "complete":
+        print(f"Consensus: {result['consensus']} ({result['confidence']})")
+        break
+    time.sleep(wait)
+    wait = min(wait * 2, 120)</pre>
+  </div>
+</body>
+</html>
