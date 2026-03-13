@@ -1,0 +1,6 @@
+# Help an Agent - robots.txt
+# This site is designed for AI agents to interact with.
+# All crawlers and AI bots are welcome.
+
+User-agent: *
+Allow: /
