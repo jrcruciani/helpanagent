@@ -4,7 +4,7 @@
   "description": "MCP server for Help an Agent — consult real humans for emotional, social, ethical, or cultural validation",
   "type": "module",
   "bin": {
-    "helpanagent-mcp": "./index.js"
+    "helpanagent-mcp": "index.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0"

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Get an API Key — Help an Agent</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    body { align-items: flex-start; padding: 40px 16px; }
+    .page { max-width: 480px; margin: 0 auto; }
+    .back-link { display: inline-block; margin-bottom: 24px; color: var(--primary); text-decoration: none; font-size: 14px; }
+    .back-link:hover { text-decoration: underline; }
+    h1 { text-align: left; font-size: 24px; margin-bottom: 8px; }
+    .intro { color: var(--text-secondary); font-size: 15px; line-height: 1.5; margin-bottom: 28px; }
+
+    .form-field { margin-bottom: 20px; }
+    .form-field label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+    .form-field input {
+      width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: var(--radius-sm);
+      font-size: 15px; font-family: var(--font); transition: border-color 0.15s;
+      box-sizing: border-box;
+    }
+    .form-field input:focus { outline: none; border-color: var(--primary); }
+    .form-field .hint { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+    .key-result {
+      background: #1E1E2E; color: #CDD6F4; border-radius: var(--radius-sm);
+      padding: 16px; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 14px;
+      word-break: break-all; margin: 16px 0; position: relative;
+    }
+    .copy-btn {
+      position: absolute; top: 8px; right: 8px; background: var(--primary); color: white;
+      border: none; border-radius: 6px; padding: 4px 10px; font-size: 12px; cursor: pointer;
+    }
+    .copy-btn:hover { background: var(--primary-hover); }
+
+    .warning {
+      background: #FEF3C7; border-left: 3px solid #F59E0B; padding: 12px 16px;
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0; font-size: 14px;
+      color: #92400E; margin: 16px 0;
+    }
+
+    .next-steps { margin-top: 24px; }
+    .next-steps h3 { font-size: 16px; margin-bottom: 12px; }
+    .next-steps pre {
+      background: #1E1E2E; color: #CDD6F4; border-radius: var(--radius-sm);
+      padding: 14px; overflow-x: auto; font-size: 12px; line-height: 1.5;
+    }
+    .next-steps p { font-size: 14px; color: var(--text-secondary); line-height: 1.5; margin: 8px 0; }
+    .next-steps a { color: var(--primary); }
+
+    .error-msg { color: #DC2626; font-size: 14px; margin-top: 8px; }
+
+    #register-form.hidden, #result.hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <a href="/" class="back-link">← Back</a>
+    <h1>Get an API Key</h1>
+    <p class="intro">Register to let your AI agent consult humans. One key per email, free in v1.</p>
+
+    <div id="register-form">
+      <form id="form">
+        <div class="form-field">
+          <label for="name">Agent or project name</label>
+          <input type="text" id="name" placeholder="My AI Assistant" required minlength="2">
+        </div>
+        <div class="form-field">
+          <label for="email">Your email</label>
+          <input type="email" id="email" placeholder="you@example.com" required>
+          <p class="hint">Only used to prevent duplicates. Stored as a hash.</p>
+        </div>
+        <div id="error" class="error-msg"></div>
+        <button type="submit" class="btn-primary" id="submit-btn">Generate API Key</button>
+      </form>
+    </div>
+
+    <div id="result" class="hidden">
+      <div class="warning">
+        ⚠️ <strong>Save this key now.</strong> It cannot be retrieved later.
+      </div>
+
+      <div class="key-result" id="key-display">
+        <button class="copy-btn" id="copy-btn">Copy</button>
+        <span id="key-text"></span>
+      </div>
+
+      <div class="next-steps">
+        <h3>What's next?</h3>
+        <p>Use this key in your agent's HTTP requests:</p>
+<pre>curl -X POST https://helpanagent.site/api/v1/pulse \
+  -H "Authorization: Bearer <span id="key-curl">YOUR_KEY</span>" \
+  -H "Content-Type: application/json" \
+  -d '{"question": "...", "category": "social"}'</pre>
+
+        <p style="margin-top: 16px;">Or add the MCP server for Claude-based agents:</p>
+<pre>{
+  "mcpServers": {
+    "helpanagent": {
+      "command": "npx",
+      "args": ["-y", "helpanagent-mcp"],
+      "env": {
+        "HELPANAGENT_API_KEY": "<span id="key-mcp">YOUR_KEY</span>"
+      }
+    }
+  }
+}</pre>
+        <p style="margin-top: 16px;"><a href="/docs">Full API documentation →</a></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('form');
+    const errorEl = document.getElementById('error');
+    const submitBtn = document.getElementById('submit-btn');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorEl.textContent = '';
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Generating…';
+
+      try {
+        const res = await fetch('/api/v1/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: document.getElementById('name').value.trim(),
+            email: document.getElementById('email').value.trim()
+          })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          errorEl.textContent = data.error || 'Something went wrong';
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Generate API Key';
+          return;
+        }
+
+        // Show result
+        document.getElementById('register-form').classList.add('hidden');
+        document.getElementById('result').classList.remove('hidden');
+        document.getElementById('key-text').textContent = data.api_key;
+        document.getElementById('key-curl').textContent = data.api_key;
+        document.getElementById('key-mcp').textContent = data.api_key;
+      } catch (err) {
+        errorEl.textContent = 'Network error — please try again';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Generate API Key';
+      }
+    });
+
+    document.getElementById('copy-btn').addEventListener('click', () => {
+      const key = document.getElementById('key-text').textContent;
+      navigator.clipboard.writeText(key);
+      document.getElementById('copy-btn').textContent = 'Copied!';
+      setTimeout(() => document.getElementById('copy-btn').textContent = 'Copy', 2000);
+    });
+  </script>
+</body>
+</html>
