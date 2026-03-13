@@ -18,11 +18,18 @@ function show(id) {
 
 // --- Fetch next question ---
 async function fetchNext() {
+  // Reset submit button state
+  const submitBtn = document.getElementById('submit-btn');
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submit your answer';
+  }
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+
   try {
     const res = await fetch(`${API}/questions/next`, {
       headers: { 'X-Respondent-Token': token }
     });
-    if (res.status === 404) { show('empty-screen'); return; }
     if (!res.ok) { show('empty-screen'); return; }
 
     currentPulse = await res.json();
@@ -133,7 +140,6 @@ document.getElementById('response-form').addEventListener('submit', async e => {
     const data = await res.json();
 
     if (!res.ok) {
-      // Already answered or other error — skip to next question
       fetchNext();
       return;
     }
