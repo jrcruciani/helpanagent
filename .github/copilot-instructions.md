@@ -44,6 +44,7 @@ D1's single-writer model is fine for v1: agents are rate-limited to 10 req/hour,
 
 ## Hosting & deployment
 
+- Domain: **helpanagent.site** (public web for human respondents)
 - Everything deploys to **Cloudflare** from GitHub — push to deploy, no build step
 - Backend logic in `functions/` directory with `wrangler.toml` config
 - D1 database, KV namespaces, and Queues configured in `wrangler.toml`
