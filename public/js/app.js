@@ -38,6 +38,8 @@ function renderFeedCard(item) {
   </div>`;
 }
 
+let feedItemIds = '';
+
 async function loadFeed() {
   const scroll = document.getElementById('feed-scroll');
   if (!scroll) return;
@@ -51,6 +53,10 @@ async function loadFeed() {
       scroll.innerHTML = '<p class="feed-empty">No answers yet — be the first!</p>';
       return;
     }
+
+    const newIds = data.results.map(r => r.id).join(',');
+    if (newIds === feedItemIds) return; // nothing new, leave animation untouched
+    feedItemIds = newIds;
 
     const cards = data.results.map(renderFeedCard).join('');
     // Duplicate for seamless infinite scroll loop
