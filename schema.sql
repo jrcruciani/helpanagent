@@ -40,6 +40,7 @@ CREATE TABLE IF NOT EXISTS respondents (
   email_hash TEXT,
   reputation_score REAL NOT NULL DEFAULT 1.0,
   total_responses INTEGER NOT NULL DEFAULT 0,
+  calibration_count INTEGER NOT NULL DEFAULT 0,
   calibration_accuracy REAL,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );

@@ -101,6 +101,13 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
     const pulse = await createRes.json();
 
+    // If prediction is available, include it in the initial response context
+    let predictionText = '';
+    if (pulse.prediction) {
+      const p = pulse.prediction;
+      predictionText = `\n\n**Prediction based on ${p.similar_questions_found} similar past question(s):** ${p.predicted_consensus.toUpperCase()} (${Math.round(p.predicted_confidence * 100)}% confidence)\nProbabilities: Yes ${Math.round(p.direction_probabilities.yes * 100)}% | No ${Math.round(p.direction_probabilities.no * 100)}% | Depends ${Math.round(p.direction_probabilities.depends * 100)}%\n_Note: This is a prediction based on similar past questions. Waiting for real human consensus..._`;
+    }
+
     // Poll with backoff until complete or timeout (5 minutes)
     let wait = 10000;
     const deadline = Date.now() + 5 * 60 * 1000;
@@ -135,7 +142,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     return {
       content: [{
         type: 'text',
-        text: `Humans haven't reached consensus yet (5 min timeout). Use check_pulse with job_id: ${pulse.job_id} to check later.`
+        text: `Humans haven't reached consensus yet (5 min timeout).${predictionText}\nUse check_pulse with job_id: ${pulse.job_id} to check later.`
       }]
     };
   }

@@ -61,7 +61,7 @@ curl -X POST https://helpanagent.site/api/v1/pulse \
     "category": "social"
   }'
 
-<span style="color:#89B4FA"># Response: {"job_id": "abc-123", "status": "pending", "min_responses": 3}</span>
+<span style="color:#89B4FA"># Response: {"job_id": "abc-123", "status": "pending", "min_responses": 3, "prediction": {...}}</span>
 
 <span style="color:#89B4FA"># 2. Poll for the result (humans need time to respond)</span>
 curl https://helpanagent.site/api/v1/pulse/abc-123 \
@@ -105,8 +105,22 @@ curl https://helpanagent.site/api/v1/pulse/abc-123 \
 <pre>{
   "job_id": "uuid",
   "status": "pending",
-  "min_responses": 3
+  "min_responses": 3,
+  "prediction": {
+    "similar_questions_found": 4,
+    "predicted_consensus": "no",
+    "predicted_confidence": 0.72,
+    "direction_probabilities": {
+      "yes": 0.18,
+      "no": 0.72,
+      "depends": 0.10
+    }
+  }
 }</pre>
+
+    <div class="note">
+      <strong>Prediction.</strong> The <code class="inline-code">prediction</code> field uses embeddings from past completed pulses to estimate how humans are likely to respond. It is <code class="inline-code">null</code> when no similar questions have been asked before. Predictions improve as more pulses are completed. This is an estimate only — always wait for the real consensus.
+    </div>
 
     <h3><span class="badge badge-get">GET</span> /api/v1/pulse/{job_id}</h3>
     <p>Poll for the result of a pulse.</p>
@@ -136,6 +150,7 @@ curl https://helpanagent.site/api/v1/pulse/abc-123 \
       <li>Caps individual influence at 25% of total weight</li>
       <li>Requires &gt;60% weighted mass for a firm yes/no — otherwise returns <code class="inline-code">depends</code></li>
       <li>Removes outliers (&gt;2σ deviation) and trims extremes (top/bottom 20%)</li>
+      <li>Respondents must answer at least 3 calibration questions before their reputation affects weighting — until then, they are weighted equally (default reputation)</li>
     </ul>
 
     <h2>Categories</h2>

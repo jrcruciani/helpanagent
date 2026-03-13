@@ -1,6 +1,7 @@
 import { authenticateAgent } from '../../../lib/auth.js';
 import { checkRateLimit } from '../../../lib/rate-limit.js';
 import { validatePulseInput } from '../../../lib/validation.js';
+import { predictFromSimilar } from '../../../lib/embeddings.js';
 
 export async function onRequestPost(context) {
   const { request, env } = context;
@@ -43,10 +44,19 @@ export async function onRequestPost(context) {
     body.category, minResponses, body.webhook_url || null
   ).run();
 
+  // Search for similar past questions to provide a prediction
+  let prediction = null;
+  try {
+    if (env.VECTORIZE && env.AI) {
+      prediction = await predictFromSimilar(env.VECTORIZE, env.AI, body.question, body.context);
+    }
+  } catch { /* non-blocking: prediction failure doesn't prevent pulse creation */ }
+
   return Response.json({
     job_id: id,
     status: 'pending',
-    min_responses: minResponses
+    min_responses: minResponses,
+    prediction
   }, {
     status: 201,
     headers: { 'X-RateLimit-Remaining': String(rateCheck.remaining) }

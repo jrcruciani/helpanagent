@@ -10,3 +10,10 @@ database_id = "56e8ddb0-3424-40ba-a698-4dfe35b5529f"
 [[kv_namespaces]]
 binding = "KV"
 id = "203fc518f7d943f892b3b5d2665f4bb8"
+
+[ai]
+binding = "AI"
+
+[[vectorize]]
+binding = "VECTORIZE"
+index_name = "pulse-embeddings"

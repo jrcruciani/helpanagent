@@ -1,5 +1,6 @@
 import { validateResponseInput } from '../../../../../lib/validation.js';
 import { computeConsensus, calculateMinReadingTime } from '../../../../../lib/consensus.js';
+import { indexCompletedPulse } from '../../../../../lib/embeddings.js';
 
 export async function onRequestPost(context) {
   const { env, request, params } = context;
@@ -85,7 +86,7 @@ export async function onRequestPost(context) {
     const newRep = Math.max(0.1, Math.min(2.0, (respondent?.reputation_score || 1.0) + delta));
 
     await env.DB.prepare(
-      'UPDATE respondents SET calibration_accuracy = ?, reputation_score = ? WHERE token = ?'
+      'UPDATE respondents SET calibration_accuracy = ?, reputation_score = ?, calibration_count = calibration_count + 1 WHERE token = ?'
     ).bind(newAcc, newRep, respondentToken).run();
   }
 
@@ -122,6 +123,14 @@ export async function onRequestPost(context) {
           result.consensus, result.confidence,
           result.responses_used, result.outliers_removed, pulseId
         ).run();
+
+        // Index completed pulse in Vectorize for similarity predictions
+        try {
+          if (env.VECTORIZE && env.AI) {
+            const completedPulse = { ...pulse, consensus: result.consensus, confidence: result.confidence };
+            await indexCompletedPulse(env.VECTORIZE, env.AI, completedPulse, result.direction_mass);
+          }
+        } catch { /* non-blocking: embedding failure doesn't break response flow */ }
 
         // Fire webhook (fire-once, no retries)
         if (pulse.webhook_url) {
