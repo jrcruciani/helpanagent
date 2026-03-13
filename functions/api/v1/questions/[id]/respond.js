@@ -122,6 +122,24 @@ export async function onRequestPost(context) {
           result.consensus, result.confidence,
           result.responses_used, result.outliers_removed, pulseId
         ).run();
+
+        // Fire webhook (fire-once, no retries)
+        if (pulse.webhook_url) {
+          try {
+            await fetch(pulse.webhook_url, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                job_id: pulseId,
+                status: 'complete',
+                consensus: result.consensus,
+                confidence: result.confidence,
+                responses_used: result.responses_used,
+                outliers_removed: result.outliers_removed
+              })
+            });
+          } catch { /* fire and forget */ }
+        }
       }
     }
   }

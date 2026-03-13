@@ -35,12 +35,12 @@ export async function onRequestPost(context) {
   const minResponses = body.min_responses || 3;
 
   await env.DB.prepare(`
-    INSERT INTO pulses (id, agent_id, question, context, payload, category, min_responses)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO pulses (id, agent_id, question, context, payload, category, min_responses, webhook_url)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `).bind(
     id, auth.agent.agent_id,
     body.question, body.context || null, body.payload || null,
-    body.category, minResponses
+    body.category, minResponses, body.webhook_url || null
   ).run();
 
   return Response.json({

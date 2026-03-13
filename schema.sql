@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS pulses (
   category TEXT NOT NULL CHECK(category IN ('social', 'ethical', 'emotional', 'cultural')),
   min_responses INTEGER NOT NULL DEFAULT 3 CHECK(min_responses BETWEEN 3 AND 7),
   status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending', 'complete', 'insufficient_responses')),
+  webhook_url TEXT,
   consensus TEXT CHECK(consensus IN ('yes', 'no', 'depends')),
   confidence REAL,
   summary TEXT,
