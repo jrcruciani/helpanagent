@@ -1,5 +1,8 @@
 import { sha256 } from '../../../lib/auth.js';
 
+const REGISTER_LIMIT = 3;
+const REGISTER_WINDOW = 3600;
+
 export async function onRequestPost(context) {
   const { env, request } = context;
 
@@ -8,6 +11,36 @@ export async function onRequestPost(context) {
     body = await request.json();
   } catch {
     return Response.json({ error: 'Invalid JSON body' }, { status: 400 });
+  }
+
+  // IP rate limit: 3 registrations per hour
+  const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+  const ipHash = await sha256(ip);
+  const ipKey = `reg_ip:${ipHash}`;
+  const ipData = await env.KV.get(ipKey, { type: 'json' });
+
+  if (ipData && ipData.count >= REGISTER_LIMIT) {
+    return Response.json({
+      error: 'Too many registrations from this IP. Try again later.'
+    }, { status: 429 });
+  }
+
+  // Verify Turnstile token if provided (web form sends it, API callers don't)
+  if (body.turnstile_token && env.TURNSTILE_SECRET) {
+    const formData = new URLSearchParams();
+    formData.append('secret', env.TURNSTILE_SECRET);
+    formData.append('response', body.turnstile_token);
+    formData.append('remoteip', ip);
+
+    const verification = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      method: 'POST',
+      body: formData
+    });
+    const result = await verification.json();
+
+    if (!result.success) {
+      return Response.json({ error: 'Captcha verification failed' }, { status: 403 });
+    }
   }
 
   const email = (body.email || '').trim().toLowerCase();
@@ -42,12 +75,17 @@ export async function onRequestPost(context) {
     created_at: new Date().toISOString()
   }));
 
-  // Track email → agent mapping (to enforce 1 key per email)
+  // Track email → agent mapping
   await env.KV.put(`email:${emailHash}`, JSON.stringify({
     agent_id: agentId,
     name,
     created_at: new Date().toISOString()
   }));
+
+  // Update IP rate counter
+  await env.KV.put(ipKey, JSON.stringify({
+    count: (ipData?.count || 0) + 1
+  }), { expirationTtl: REGISTER_WINDOW });
 
   return Response.json({
     api_key: apiKey,

@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Get an API Key — Help an Agent</title>
   <link rel="stylesheet" href="/css/style.css">
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
   <style>
     body { align-items: flex-start; padding: 40px 16px; }
     .page { max-width: 480px; margin: 0 auto; }
@@ -71,6 +72,9 @@
           <input type="email" id="email" placeholder="you@example.com" required>
           <p class="hint">Only used to prevent duplicates. Stored as a hash.</p>
         </div>
+        <div class="form-field">
+          <div class="cf-turnstile" data-sitekey="TURNSTILE_SITE_KEY" data-callback="onTurnstileSuccess" data-theme="light"></div>
+        </div>
         <div id="error" class="error-msg"></div>
         <button type="submit" class="btn-primary" id="submit-btn">Generate API Key</button>
       </form>
@@ -115,6 +119,10 @@
     const form = document.getElementById('form');
     const errorEl = document.getElementById('error');
     const submitBtn = document.getElementById('submit-btn');
+    let turnstileToken = null;
+
+    function onTurnstileSuccess(token) { turnstileToken = token; }
+    window.onTurnstileSuccess = onTurnstileSuccess;
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -122,14 +130,17 @@
       submitBtn.disabled = true;
       submitBtn.textContent = 'Generating…';
 
+      const payload = {
+        name: document.getElementById('name').value.trim(),
+        email: document.getElementById('email').value.trim()
+      };
+      if (turnstileToken) payload.turnstile_token = turnstileToken;
+
       try {
         const res = await fetch('/api/v1/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name: document.getElementById('name').value.trim(),
-            email: document.getElementById('email').value.trim()
-          })
+          body: JSON.stringify(payload)
         });
 
         const data = await res.json();
