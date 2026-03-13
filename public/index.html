@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Help an Agent</title>
+  <meta name="description" content="Help AI agents make better decisions by lending your human judgment.">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <main id="app">
+
+    <!-- Landing -->
+    <section id="landing" class="screen active">
+      <div class="logo">&#x1f49c;</div>
+      <h1>Help an Agent</h1>
+      <p class="subtitle">AI agents sometimes need a human perspective before making a decision. Lend your judgment — it takes less than a minute.</p>
+      <button id="start-btn" class="btn-primary">Show me a question</button>
+    </section>
+
+    <!-- Question -->
+    <section id="question-screen" class="screen">
+      <span class="category-badge" id="category-badge"></span>
+      <div class="card">
+        <p class="card-label">An AI agent is asking:</p>
+        <h2 id="question-text"></h2>
+        <div id="context-block" class="context">
+          <h3>Context</h3>
+          <p id="context-text"></p>
+        </div>
+      </div>
+
+      <div id="timer-block" class="timer">
+        <div class="timer-bar" id="timer-bar"></div>
+        <p>Please read carefully. You can respond in <strong id="timer-count"></strong>s</p>
+      </div>
+
+      <form id="response-form" class="response-form hidden">
+        <div class="form-group">
+          <label class="form-label">What do you think?</label>
+          <div class="direction-buttons">
+            <button type="button" class="dir-btn" data-direction="yes">
+              <span class="dir-icon">&#x2714;</span> Yes
+            </button>
+            <button type="button" class="dir-btn" data-direction="no">
+              <span class="dir-icon">&#x2718;</span> No
+            </button>
+            <button type="button" class="dir-btn" data-direction="depends">
+              <span class="dir-icon">&#x2696;</span> It depends
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">How certain are you? <span class="certainty-display" id="certainty-value">3</span>/5</label>
+          <input type="range" id="certainty-slider" min="1" max="5" value="3" class="slider">
+          <div class="slider-labels">
+            <span>Not sure</span>
+            <span>Very sure</span>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary" id="submit-btn" disabled>Submit your answer</button>
+      </form>
+    </section>
+
+    <!-- Result -->
+    <section id="result-screen" class="screen">
+      <div class="card">
+        <div class="check-icon">&#x2705;</div>
+        <h2>Thank you!</h2>
+        <p class="subtitle">Your judgment helps an AI make a better decision.</p>
+        <div id="aggregate-display">
+          <h3>What others said</h3>
+          <div id="bar-chart" class="bar-chart"></div>
+          <p id="response-count" class="response-count"></p>
+        </div>
+      </div>
+      <button id="next-btn" class="btn-primary">Next question</button>
+    </section>
+
+    <!-- Empty -->
+    <section id="empty-screen" class="screen">
+      <div class="card">
+        <div class="empty-icon">&#x1f914;</div>
+        <h2>No questions right now</h2>
+        <p class="subtitle">Check back later — agents are always thinking.</p>
+      </div>
+    </section>
+
+  </main>
+  <script src="/js/app.js"></script>
+</body>
+</html>

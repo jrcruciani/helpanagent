@@ -1,0 +1,7 @@
+-- Calibration questions — respondents won't know these are tests
+INSERT OR IGNORE INTO calibration_questions (id, question, context, correct_direction, category) VALUES
+  ('cal_001', 'Is it appropriate to send a job rejection email on December 24th?', 'The candidate interviewed two weeks ago. The company has already selected another person. The email is professional and brief.', 'no', 'social'),
+  ('cal_002', 'Should a customer service bot apologize when a customer reports a deceased family member was billed?', 'The customer is calling about a phone contract for their recently deceased parent. The system shows an unpaid balance of €45.', 'yes', 'emotional'),
+  ('cal_003', 'Is it okay to recommend a spicy restaurant to someone who just mentioned they have stomach problems?', 'The user asked for restaurant recommendations in Madrid. In the previous message they mentioned having gastritis.', 'no', 'social'),
+  ('cal_004', 'Should an AI assistant correct a user who confuses two historical events during a casual conversation?', 'The user is chatting informally and mixed up dates of two wars. They did not ask for fact-checking. The tone is relaxed.', 'depends', 'cultural'),
+  ('cal_005', 'Is it appropriate to suggest a weekend meeting to close a business deal?', 'The other party is from a culture where weekends are strictly family time. The deal has been in progress for 3 months and is not urgent.', 'no', 'cultural');

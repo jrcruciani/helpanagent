@@ -1,0 +1,296 @@
+:root {
+  --bg: #F7F5FF;
+  --card-bg: #FFFFFF;
+  --primary: #7C5CFC;
+  --primary-hover: #6344E0;
+  --primary-light: #EDE9FE;
+  --text: #1C1917;
+  --text-secondary: #78716C;
+  --text-muted: #A8A29E;
+  --border: #E7E5E4;
+  --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-lg: 0 4px 12px rgba(0,0,0,0.08);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --yes: #34D399;
+  --no: #F87171;
+  --depends: #FBBF24;
+  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#app {
+  width: 100%;
+  max-width: 520px;
+  padding: 24px 16px;
+}
+
+/* Screens */
+.screen { display: none; }
+.screen.active { display: block; animation: fadeIn 0.3s ease; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Landing */
+.logo { font-size: 48px; text-align: center; margin-bottom: 8px; }
+
+h1 {
+  font-size: 28px;
+  font-weight: 700;
+  text-align: center;
+  letter-spacing: -0.5px;
+  margin-bottom: 12px;
+}
+
+.subtitle {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 16px;
+  line-height: 1.5;
+  margin-bottom: 32px;
+}
+
+/* Buttons */
+.btn-primary {
+  display: block;
+  width: 100%;
+  padding: 14px 24px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+.btn-primary:hover { background: var(--primary-hover); }
+.btn-primary:active { transform: scale(0.98); }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Category badge */
+.category-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  background: var(--primary-light);
+  color: var(--primary);
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: capitalize;
+  margin-bottom: 16px;
+}
+
+/* Cards */
+.card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow);
+  margin-bottom: 24px;
+}
+
+.card-label {
+  font-size: 13px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+
+.card h2 {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: left;
+  margin-bottom: 0;
+}
+
+/* Context */
+.context {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.context h3 {
+  font-size: 13px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+.context p {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* Timer */
+.timer {
+  text-align: center;
+  margin-bottom: 24px;
+}
+.timer p {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+.timer-bar {
+  height: 3px;
+  background: var(--primary-light);
+  border-radius: 2px;
+  margin-bottom: 12px;
+  overflow: hidden;
+  position: relative;
+}
+.timer-bar::after {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  background: var(--primary);
+  border-radius: 2px;
+  width: var(--progress, 0%);
+  transition: width 1s linear;
+}
+
+/* Response form */
+.response-form { margin-top: 0; }
+.hidden { display: none !important; }
+
+.form-group { margin-bottom: 24px; }
+.form-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.direction-buttons { display: flex; gap: 8px; }
+.dir-btn {
+  flex: 1;
+  padding: 12px 8px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--card-bg);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.dir-icon { font-size: 20px; }
+.dir-btn:hover { border-color: var(--primary); background: var(--primary-light); }
+.dir-btn.selected[data-direction="yes"] { border-color: var(--yes); background: #ECFDF5; }
+.dir-btn.selected[data-direction="no"] { border-color: var(--no); background: #FEF2F2; }
+.dir-btn.selected[data-direction="depends"] { border-color: var(--depends); background: #FFFBEB; }
+
+/* Slider */
+.slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border);
+  outline: none;
+}
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--primary);
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+.slider-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+.certainty-display {
+  display: inline-block;
+  background: var(--primary-light);
+  color: var(--primary);
+  padding: 1px 8px;
+  border-radius: 6px;
+  font-weight: 700;
+}
+
+/* Result screen */
+.check-icon { font-size: 36px; text-align: center; margin-bottom: 8px; }
+.result-screen .card h2 { text-align: center; }
+
+.bar-chart { margin-top: 16px; }
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.bar-label {
+  font-size: 14px;
+  font-weight: 500;
+  width: 80px;
+  text-align: right;
+}
+.bar-track {
+  flex: 1;
+  height: 10px;
+  background: var(--border);
+  border-radius: 5px;
+  overflow: hidden;
+}
+.bar-fill {
+  height: 100%;
+  border-radius: 5px;
+  transition: width 0.5s ease;
+}
+.bar-yes .bar-fill { background: var(--yes); }
+.bar-no .bar-fill { background: var(--no); }
+.bar-depends .bar-fill { background: var(--depends); }
+.bar-pct {
+  font-size: 14px;
+  font-weight: 600;
+  width: 40px;
+}
+.response-count {
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-top: 12px;
+}
+
+/* Empty screen */
+.empty-icon { font-size: 48px; text-align: center; margin-bottom: 8px; }
+#empty-screen .card h2 { text-align: center; }
+#empty-screen .subtitle { margin-bottom: 0; }
+
+/* Result card center */
+#result-screen .card h2 { text-align: center; }
+#result-screen h3 {
+  font-size: 14px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: center;
+  margin-top: 20px;
+  margin-bottom: 4px;
+}
