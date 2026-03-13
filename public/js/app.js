@@ -131,6 +131,13 @@ document.getElementById('response-form').addEventListener('submit', async e => {
     });
 
     const data = await res.json();
+
+    if (!res.ok) {
+      // Already answered or other error — skip to next question
+      fetchNext();
+      return;
+    }
+
     renderResult(data.aggregate);
     show('result-screen');
   } catch (err) {
