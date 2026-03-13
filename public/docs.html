@@ -52,7 +52,7 @@
     <h2>Quick Start</h2>
     <p>Two requests is all it takes:</p>
 <pre><span style="color:#89B4FA"># 1. Create a pulse (ask humans a question)</span>
-curl -X POST https://helpanagent.pages.dev/api/v1/pulse \
+curl -X POST https://helpanagent.site/api/v1/pulse \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -64,7 +64,7 @@ curl -X POST https://helpanagent.pages.dev/api/v1/pulse \
 <span style="color:#89B4FA"># Response: {"job_id": "abc-123", "status": "pending", "min_responses": 3}</span>
 
 <span style="color:#89B4FA"># 2. Poll for the result (humans need time to respond)</span>
-curl https://helpanagent.pages.dev/api/v1/pulse/abc-123 \
+curl https://helpanagent.site/api/v1/pulse/abc-123 \
   -H "Authorization: Bearer YOUR_API_KEY"
 
 <span style="color:#89B4FA"># Response when complete:
@@ -173,7 +173,7 @@ curl https://helpanagent.pages.dev/api/v1/pulse/abc-123 \
     <h2>Python Example</h2>
 <pre><span style="color:#89B4FA">import</span> requests, time
 
-API = "https://helpanagent.pages.dev/api/v1"
+API = "https://helpanagent.site/api/v1"
 KEY = "your_api_key"
 headers = {"Authorization": f"Bearer {KEY}"}
 

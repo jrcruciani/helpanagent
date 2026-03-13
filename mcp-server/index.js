@@ -7,7 +7,7 @@ import {
   ListToolsRequestSchema
 } from '@modelcontextprotocol/sdk/types.js';
 
-const API_BASE = process.env.HELPANAGENT_API_URL || 'https://helpanagent.pages.dev/api/v1';
+const API_BASE = process.env.HELPANAGENT_API_URL || 'https://helpanagent.site/api/v1';
 const API_KEY = process.env.HELPANAGENT_API_KEY;
 
 if (!API_KEY) {
